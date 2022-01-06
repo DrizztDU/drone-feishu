@@ -1,0 +1,247 @@
+---
+kind: pipeline
+type: docker
+name: linux-amd64
+
+trigger:
+  ref:
+    - refs/heads/master
+    - refs/pull/**
+    - refs/tags/**
+
+steps:
+  - name: build-push
+    image: golang:1.16
+    environment:
+      CGO_ENABLED: 0
+      GOOS: linux
+      GOARCH: amd64
+    commands:
+      - go build -v -ldflags '-X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/amd64/drone-feishu
+    when:
+      event:
+        exclude:
+          - tag
+
+  - name: build-tag
+    image: golang:1.16
+    environment:
+      CGO_ENABLED: 0
+      GOOS: linux
+      GOARCH: amd64
+    commands:
+      - go build -v -ldflags '-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/amd64/drone-feishu
+    when:
+      event:
+        - tag
+
+  - name: executable
+    image: golang:1.16
+    commands:
+      - ./release/linux/amd64/drone-feishu --help
+
+  - name: dryrun
+    image: plugins/docker:linux-amd64
+    privileged: true
+    settings:
+      platforms: linux/amd64
+      cache_from: DrizztDU/drone-feishu
+      repo: DrizztDU/drone-feishu
+      tags: linux-amd64
+      dockerfile: docker/Dockerfile.linux.amd64
+      dry_run: true
+    when:
+      event:
+        - pull_request
+
+  - name: publish
+    image: plugins/docker:linux-amd64
+    privileged: true
+    settings:
+      platforms: linux/amd64
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: DrizztDU/drone-feishu
+      auto_tag: true
+      auto_tag_suffix: linux-amd64
+      dockerfile: docker/Dockerfile.linux.amd64
+    when:
+      event:
+        exclude:
+          - pull_request
+
+---
+kind: pipeline
+type: docker
+name: linux-arm64
+
+trigger:
+  ref:
+    - refs/heads/master
+    - refs/pull/**
+    - refs/tags/**
+
+steps:
+  - name: build-push
+    image: golang:1.16
+    environment:
+      CGO_ENABLED: 0
+      GOOS: linux
+      GOARCH: arm64
+    commands:
+      - go build -v -ldflags '-X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm64/drone-feishu
+    when:
+      event:
+        exclude:
+          - tag
+
+  - name: build-tag
+    image: golang:1.16
+    environment:
+      CGO_ENABLED: 0
+      GOOS: linux
+      GOARCH: arm64
+    commands:
+      - go build -v -ldflags '-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm64/drone-feishu
+    when:
+      event:
+        - tag
+
+  - name: dryrun
+    image: plugins/docker:linux-amd64
+    privileged: true
+    settings:
+      platforms: linux/arm64
+      cache_from: DrizztDU/drone-feishu
+      repo: DrizztDU/drone-feishu
+      tags: linux-arm64
+      dockerfile: docker/Dockerfile.linux.arm64
+      dry_run: true
+    when:
+      event:
+        - pull_request
+
+  - name: publish
+    image: plugins/docker:linux-amd64
+    privileged: true
+    settings:
+      platforms: linux/arm64
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: DrizztDU/drone-feishu
+      auto_tag: true
+      auto_tag_suffix: linux-arm64
+      dockerfile: docker/Dockerfile.linux.arm64
+    when:
+      event:
+        exclude:
+          - pull_request
+
+---
+kind: pipeline
+type: docker
+name: linux-arm
+
+trigger:
+  ref:
+    - refs/heads/master
+    - refs/pull/**
+    - refs/tags/**
+
+steps:
+  - name: build-push
+    image: golang:1.16
+    environment:
+      CGO_ENABLED: 0
+      GOOS: linux
+      GOARCH: arm
+    commands:
+      - go build -v -ldflags '-X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm/drone-feishu
+    when:
+      event:
+        exclude:
+          - tag
+
+  - name: build-tag
+    image: golang:1.16
+    environment:
+      CGO_ENABLED: 0
+      GOOS: linux
+      GOARCH: arm
+    commands:
+      - go build -v -ldflags '-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm/drone-feishu
+    when:
+      event:
+        - tag
+
+  - name: dryrun
+    image: plugins/docker:linux-amd64
+    privileged: true
+    settings:
+      platforms: linux/arm
+      cache_from: DrizztDU/drone-feishu
+      repo: DrizztDU/drone-feishu
+      tags: linux-arm
+      dockerfile: docker/Dockerfile.linux.arm
+      dry_run: true
+    when:
+      event:
+        - pull_request
+
+  - name: publish
+    image: plugins/docker:linux-amd64
+    privileged: true
+    settings:
+      platforms: linux/arm
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: DrizztDU/drone-feishu
+      auto_tag: true
+      auto_tag_suffix: linux-arm
+      dockerfile: docker/Dockerfile.linux.arm
+    when:
+      event:
+        exclude:
+          - pull_request
+
+---
+kind: pipeline
+type: docker
+name: notifications
+
+trigger:
+  ref:
+    - refs/heads/master
+    - refs/tags/**
+
+steps:
+  - name: manifest
+    image: plugins/manifest
+    settings:
+      ignore_missing: true
+      spec: docker/manifest.tmpl
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+
+  - name: feishu
+    image: DrizztDU/drone-feishu:linux-amd64
+    pull: always
+    environment:
+      TZ: Asia/Shanghai
+    settings:
+      debug: true
+      webhook:
+        from_secret: feishu_webhook
+
+depends_on:
+  - linux-amd64
+  - linux-arm64
+  - linux-arm

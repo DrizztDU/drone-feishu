@@ -1,0 +1,12 @@
+FROM plugins/base:linux-arm64
+
+LABEL maintainer="DrizztDU <me@dtdoud.com>" \
+  org.label-schema.name="Drone feishu" \
+  org.label-schema.vendor="DrizztDU" \
+  org.label-schema.schema-version="1.0"
+
+COPY release/linux/arm64/drone-feishu /bin/
+
+RUN apk add --no-cache tzdata
+
+ENTRYPOINT ["/bin/drone-feishu"]
