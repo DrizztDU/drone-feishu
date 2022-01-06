@@ -3,6 +3,10 @@ kind: pipeline
 type: docker
 name: linux-amd64
 
+platform:
+  os: linux
+  arch: amd64
+
 trigger:
   ref:
     - refs/heads/master
@@ -42,11 +46,11 @@ steps:
 
   - name: dryrun
     image: plugins/docker:linux-amd64
-    privileged: true
     settings:
       platforms: linux/amd64
-      cache_from: DrizztDU/drone-feishu
-      repo: DrizztDU/drone-feishu
+      cache_from: drizztdu/drone-feishu
+      registry: ghcr.io
+      repo: ghcr.io/drizztdu/drone-feishu
       tags: linux-amd64
       dockerfile: docker/Dockerfile.linux.amd64
       dry_run: true
@@ -56,14 +60,14 @@ steps:
 
   - name: publish
     image: plugins/docker:linux-amd64
-    privileged: true
     settings:
       platforms: linux/amd64
       username:
         from_secret: docker_username
       password:
         from_secret: docker_password
-      repo: DrizztDU/drone-feishu
+      registry: ghcr.io
+      repo: ghcr.io/drizztdu/drone-feishu
       auto_tag: true
       auto_tag_suffix: linux-amd64
       dockerfile: docker/Dockerfile.linux.amd64
@@ -76,6 +80,10 @@ steps:
 kind: pipeline
 type: docker
 name: linux-arm64
+
+platform:
+  os: linux
+  arch: arm64
 
 trigger:
   ref:
@@ -110,12 +118,11 @@ steps:
         - tag
 
   - name: dryrun
-    image: plugins/docker:linux-amd64
-    privileged: true
+    image: plugins/docker:linux-arm64
     settings:
       platforms: linux/arm64
-      cache_from: DrizztDU/drone-feishu
-      repo: DrizztDU/drone-feishu
+      cache_from: drizztdu/drone-feishu
+      repo: ghcr.io/drizztdu/drone-feishu
       tags: linux-arm64
       dockerfile: docker/Dockerfile.linux.arm64
       dry_run: true
@@ -124,15 +131,15 @@ steps:
         - pull_request
 
   - name: publish
-    image: plugins/docker:linux-amd64
-    privileged: true
+    image: plugins/docker:linux-arm64
     settings:
       platforms: linux/arm64
       username:
         from_secret: docker_username
       password:
         from_secret: docker_password
-      repo: DrizztDU/drone-feishu
+      registry: ghcr.io
+      repo: ghcr.io/drizztdu/drone-feishu
       auto_tag: true
       auto_tag_suffix: linux-arm64
       dockerfile: docker/Dockerfile.linux.arm64
@@ -145,6 +152,10 @@ steps:
 kind: pipeline
 type: docker
 name: linux-arm
+
+platform:
+  os: linux
+  arch: arm
 
 trigger:
   ref:
@@ -179,12 +190,11 @@ steps:
         - tag
 
   - name: dryrun
-    image: plugins/docker:linux-amd64
-    privileged: true
+    image: plugins/docker:linux-arm
     settings:
       platforms: linux/arm
-      cache_from: DrizztDU/drone-feishu
-      repo: DrizztDU/drone-feishu
+      cache_from: drizztdu/drone-feishu
+      repo: ghcr.io/drizztdu/drone-feishu
       tags: linux-arm
       dockerfile: docker/Dockerfile.linux.arm
       dry_run: true
@@ -193,15 +203,15 @@ steps:
         - pull_request
 
   - name: publish
-    image: plugins/docker:linux-amd64
-    privileged: true
+    image: plugins/docker:linux-arm
     settings:
       platforms: linux/arm
       username:
         from_secret: docker_username
       password:
         from_secret: docker_password
-      repo: DrizztDU/drone-feishu
+      registry: ghcr.io
+      repo: ghcr.io/drizztdu/drone-feishu
       auto_tag: true
       auto_tag_suffix: linux-arm
       dockerfile: docker/Dockerfile.linux.arm
@@ -215,10 +225,17 @@ kind: pipeline
 type: docker
 name: notifications
 
+platform:
+  os: linux
+  arch: amd64
+
 trigger:
   ref:
     - refs/heads/master
     - refs/tags/**
+  status:
+    - success
+    - failure
 
 steps:
   - name: manifest
@@ -232,7 +249,7 @@ steps:
         from_secret: docker_password
 
   - name: feishu
-    image: DrizztDU/drone-feishu:linux-amd64
+    image: ghcr.io/drizztdu/drone-feishu:linux-amd64
     pull: always
     environment:
       TZ: Asia/Shanghai
