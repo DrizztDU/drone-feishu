@@ -2,6 +2,8 @@
 
 [Drone](https://github.com/drone/drone) plugin for sending Feishu notifications.
 
+> Inspired by https://github.com/appleboy/drone-telegram
+
 ## Usage
 
 Execute from the working directory:
@@ -25,5 +27,5 @@ docker run --rm \
   -e DRONE_TAG=1.0.0 \
   -e DRONE_BUILD_STARTED=1477550550 \
   -e DRONE_BUILD_FINISHED=1477550750 \
-  DrizztDU/drone-feishu:linux-amd64
+  ghcr.io/drizztdu/drone-feishu:linux-amd64
 ```
