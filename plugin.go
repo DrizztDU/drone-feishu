@@ -80,7 +80,7 @@ const defaultMessage = `
     "elements":[
       {
         "tag":"markdown",
-        "content":"{{#success Build.Status }}✅{{/success}}{{#failure Build.Status}}❌{{/failure}} Build [#{{ Build.Number }}]({{ Build.Link }}) {{ Build.Status }}.\n📝 Commit by {{ Commit.AuthorName }} on {{ Commit.Branch }}:\n**{{ Commit.Message }}**"
+        "content":"{{#success Build.Status }}✅{{/success}}{{#failure Build.Status}}❌{{/failure}} Build [#{{ Build.Number }}]({{ Build.Link }}) {{ Build.Status }}.\n📝 Commit by {{ Commit.AuthorName }} on {{ Commit.Branch }}:\n{{ Commit.Message }}"
       },
       {
         "tag":"note",
