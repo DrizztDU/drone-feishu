@@ -4,6 +4,16 @@
 
 > Inspired by https://github.com/appleboy/drone-telegram
 
+## Supported Architectures
+
+The architectures supported by this image are:
+
+| Architecture | Tag |
+|:---:|:---:|
+| x86-64 | linux-amd64 |
+| arm64 | linux-arm64 |
+| armhf | linux-arm |
+
 ## Usage
 
 Execute from the working directory:
